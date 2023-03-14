@@ -12,6 +12,8 @@ var engine = null;
 var scene = null;
 var sceneToRender = null;
 var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+var meshes = {};
+
 class Playground {
     static CreateScene(engine, canvas) {
         let scene = new BABYLON.Scene(engine);
@@ -131,24 +133,51 @@ class Playground {
     }
 }
 createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }
-        window.initFunction = async function() {
-            
-            
-            var asyncEngineCreation = async function() {
-                try {
-                return createDefaultEngine();
-                } catch(e) {
-                console.log("the available createEngine function failed. Creating the default engine instead");
-                return createDefaultEngine();
-                }
-            }
 
-            window.engine = await asyncEngineCreation();
-if (!engine) throw 'engine should not be null.';
-startRenderLoop(engine, canvas);
-window.scene = createScene();};
-initFunction().then(() => {sceneToRender = scene                    
-});
+window.initFunction = async function() {
+    var asyncEngineCreation = async function() {
+        try {
+        return createDefaultEngine();
+        } catch(e) {
+        console.log("the available createEngine function failed. Creating the default engine instead");
+        return createDefaultEngine();
+        }
+    }
+    window.engine = await asyncEngineCreation();
+    if (!engine) throw 'engine should not be null.';
+    
+    window.scene = createScene();
+
+    // Load assets
+    // const result = await BABYLON.SceneLoader.ImportMeshAsync(null, "./models/", "stairs.glb", window.scene);
+    // meshes["stairs"] = result.meshes[0];
+
+    BABYLON.SceneLoader.ImportMesh(null, "./models/", "stairs.glb", window.scene, function (meshes, particleSystems, skeletons) {
+        console.log("loaded")
+        console.log(meshes)
+        meshes[0].position.x = 5;
+        meshes[0].position.y = 1.6;
+        meshes[0].position.z = 5;
+        console.log(meshes[0].getBoundingInfo().boundingBox)
+    });
+
+    BABYLON.SceneLoader.ImportMesh(null, "./models/", "loungeSofa.glb", window.scene, function (meshes, particleSystems, skeletons) {
+        console.log("loaded")
+        meshes[0].position.x = 1;
+        meshes[0].position.y = 2;
+        meshes[0].position.z = 5;
+        meshes[0].showBoundingBox = true;
+    });
+
+
+    // Add stairs to the scene
+
+    startRenderLoop(engine, canvas);
+
+};
+
+
+initFunction().then(() => {sceneToRender = scene});
 
 // Resize
 window.addEventListener("resize", function () {
